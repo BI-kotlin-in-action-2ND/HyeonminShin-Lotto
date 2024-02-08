@@ -3,7 +3,7 @@ import com.shm.domain.user.controller.UserController.showUserBoughtLotto
 import com.shm.global.view.dismissPage
 import com.shm.global.view.welcomePage
 
-fun main(args: Array<String>) {
+fun main() {
     welcomePage()
 
     try {
