@@ -1,6 +1,6 @@
 package com.shm.domain.lotto.config
 
-import com.shm.domain.lotto.config.LottoNumberConfig.NUM_OF_LOTTO_NUMBERS
+import com.shm.domain.lotto.config.LottoNumberConfig.Companion.NUM_OF_LOTTO_NUMBERS
 
 /**
  * **ordinal**: 등수를 나타내는 지표로 사용 from 0
@@ -14,13 +14,6 @@ enum class LottoRank(val rankString: String, val prize: UInt) {
     ;
 
     companion object Checker {
-        fun getRank(countMatched: Int): LottoRank {
-            val index =
-                requireNotNull(
-                    (NUM_OF_LOTTO_NUMBERS.value - countMatched).takeIf { it < entries.size }
-                        ?: (entries.size - 1),
-                )
-            return entries[index]
-        }
+        fun getRank(countMatched: Int) = entries.getOrNull(NUM_OF_LOTTO_NUMBERS - countMatched) ?: LOSE
     }
 }
