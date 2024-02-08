@@ -4,15 +4,13 @@ fun <T> retryIfException(
     maxRetries: Int,
     block: () -> T,
 ): T {
-    var retries = 0
     var lastException: Throwable? = null
 
-    while (retries < maxRetries) {
+    repeat(maxRetries) {
         try {
             return block()
         } catch (e: Exception) {
             lastException = e
-            retries++
 
             var currentException: Throwable? = e
 
