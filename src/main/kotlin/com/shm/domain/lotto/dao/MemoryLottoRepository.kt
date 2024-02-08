@@ -12,5 +12,7 @@ class MemoryLottoRepository : LottoRepository {
 
     override fun clear() = repo.clear()
 
+    override fun size() = repo.size
+
     override fun printAll() = repo.forEach { println(it) }
 }

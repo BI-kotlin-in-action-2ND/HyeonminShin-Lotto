@@ -14,7 +14,7 @@ interface LottoRepository {
 
     fun clear()
 
-    fun size() = repo.size
+    fun size(): Int
 
     fun printAll()
 }
