@@ -1,10 +1,8 @@
 package com.shm.domain.lotto.config
 
-enum class LottoPrice(val value: UInt) {
-    // Lotto Price
-    PER_PRICE(1_000u), ;
-
+class LottoPrice {
     companion object CurrencyUnit {
+        const val PER_PRICE = 1u
         const val UNIT = "KW" // 카카오 원
     }
 }
