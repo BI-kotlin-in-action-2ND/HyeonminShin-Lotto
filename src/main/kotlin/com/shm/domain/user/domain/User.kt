@@ -1,14 +1,11 @@
 package com.shm.domain.user.domain
 
-import com.shm.domain.lotto.api.LottoMachine
-import com.shm.domain.lotto.config.LottoPrice
+import com.shm.domain.lotto.controller.LottoController
 import com.shm.domain.lotto.dao.LottoRepository
-import com.shm.domain.user.view.printUserLotto
-import com.shm.domain.user.view.realizeHowMeaninglessTheLotteryIs
 
 class User(
     private var money: UInt,
-    private val myLotto: LottoRepository = LottoMachine.getLottoRepository(),
+    private val myLotto: LottoRepository = LottoController.getLottoRepository(),
 ) {
     fun setMoney(money: UInt) {
         this.money = money
@@ -19,18 +16,21 @@ class User(
     }
 
     fun buyLotto() {
-        val (leftMoney, _) = LottoMachine.buyLotto(money, myLotto)
+        val (leftMoney, _) = LottoController.buyLotto(money, myLotto)
         money = leftMoney
     }
 
+    /**
+     * User가 가진 로또들을 금주의 당첨 번호와 대조하여 리스트로 보여준다.
+     */
     fun showAllLotto() {
-        printUserLotto()
         myLotto.printAll()
 
-        val prize = LottoMachine.getTotalWinningPrize(myLotto)
+        val prize = LottoController.getTotalWinningPrize(myLotto)
+        val (_, unit) = LottoController.getCurrentLottoPrice()
+
         println()
-        println("최종 획득 상금: $prize ${LottoPrice.UNIT}")
-        // just for fun
-        realizeHowMeaninglessTheLotteryIs(prize)
+        println("최종 획득 상금: $prize $unit")
+        println()
     }
 }
