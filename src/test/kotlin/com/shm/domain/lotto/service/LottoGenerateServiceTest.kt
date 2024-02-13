@@ -1,8 +1,10 @@
 package com.shm.domain.lotto.service
 
-import com.shm.domain.lotto.config.LottoNumberConfig
 import com.shm.domain.lotto.dao.LottoContainer
 import com.shm.domain.lotto.domain.Lotto
+import com.shm.domain.lotto.domain.LottoNumber
+import com.shm.domain.lotto.domain.generator.ManualLottoGenerator
+import com.shm.domain.lotto.view.InputProvider
 import io.kotest.assertions.throwables.shouldThrowAny
 import io.kotest.core.spec.Order
 import io.kotest.core.spec.style.ShouldSpec
@@ -16,6 +18,15 @@ import io.kotest.matchers.types.shouldBeTypeOf
 
 @Order(0)
 class LottoGenerateServiceTest : ShouldSpec({
+    // operating normally
+    val customManualLottoGenerator =
+        ManualLottoGenerator(
+            object : InputProvider<List<Int>> {
+                override fun getInput(): List<Int> =
+                    (LottoNumber.RAW_LOTTO_MIN_NUMBER..LottoNumber.RAW_LOTTO_MAX_NUMBER)
+                        .shuffled().take(Lotto.NUM_OF_LOTTO_NUMBERS).toList()
+            },
+        )
 
     context("Random Lotto") {
         val randomLotto = LottoGenerateService.getRandomLotto()
@@ -25,7 +36,7 @@ class LottoGenerateServiceTest : ShouldSpec({
         }
 
         should("have a fixed size") {
-            randomLotto.size shouldBe LottoNumberConfig.NUM_OF_LOTTO_NUMBERS
+            randomLotto.size shouldBe Lotto.NUM_OF_LOTTO_NUMBERS
         }
 
         should("be sorted") {
@@ -33,63 +44,91 @@ class LottoGenerateServiceTest : ShouldSpec({
         }
 
         should("keep numbers in a certain range") {
-            randomLotto.shouldHaveLowerBound(LottoNumberConfig.MIN_LOTTO_NUMBER)
-            randomLotto.shouldHaveUpperBound(LottoNumberConfig.MAX_LOTTO_NUMBER)
+            randomLotto.shouldHaveLowerBound(LottoNumber.LOTTO_MIN_NUMBER)
+            randomLotto.shouldHaveUpperBound(LottoNumber.LOTTO_MAX_NUMBER)
         }
     }
 
     context("Manual Lotto") {
         context("NORMAL") {
-            val normalFromList = Lotto(listOf(1, 2, 3, 4, 5, 6))
-            val normalFromSortedSet = Lotto(sortedSetOf(1, 2, 3, 4, 5, 6))
+            val normalManualLotto = customManualLottoGenerator.generate()
 
             should("not be a null") {
-                normalFromList.shouldNotBeNull()
-                normalFromSortedSet.shouldNotBeNull()
+                normalManualLotto.shouldNotBeNull()
             }
 
             should("have a fixed size") {
-                normalFromList.size shouldBe LottoNumberConfig.NUM_OF_LOTTO_NUMBERS
-                normalFromSortedSet.size shouldBe LottoNumberConfig.NUM_OF_LOTTO_NUMBERS
+                normalManualLotto.size shouldBe Lotto.NUM_OF_LOTTO_NUMBERS
             }
 
             should("be sorted") {
-                normalFromList.shouldBeSorted()
-                normalFromSortedSet.shouldBeSorted()
+                normalManualLotto.shouldBeSorted()
             }
 
             should("keep numbers in a certain range") {
-                normalFromList.shouldHaveLowerBound(LottoNumberConfig.MIN_LOTTO_NUMBER)
-                normalFromList.shouldHaveUpperBound(LottoNumberConfig.MAX_LOTTO_NUMBER)
-
-                normalFromSortedSet.shouldHaveLowerBound(LottoNumberConfig.MIN_LOTTO_NUMBER)
-                normalFromSortedSet.shouldHaveUpperBound(LottoNumberConfig.MAX_LOTTO_NUMBER)
+                normalManualLotto.shouldHaveLowerBound(LottoNumber.LOTTO_MIN_NUMBER)
+                normalManualLotto.shouldHaveUpperBound(LottoNumber.LOTTO_MAX_NUMBER)
             }
         }
 
         context("ABNORMAL") {
-            should("throw size relative error: offer little or a lot") {
-                shouldThrowAny { Lotto(listOf(1, 2, 3, 4, 5)) }
-                shouldThrowAny { Lotto(listOf(1, 2, 3, 4, 5, 6, 7)) }
-
-                shouldThrowAny { Lotto(sortedSetOf(1, 2, 3, 4, 5)) }
-                shouldThrowAny { Lotto(sortedSetOf(1, 2, 3, 4, 5, 6, 7)) }
+            should("throw size error: Given few or more") {
+                shouldThrowAny {
+                    Lotto(
+                        (LottoNumber.RAW_LOTTO_MIN_NUMBER..LottoNumber.RAW_LOTTO_MAX_NUMBER)
+                            .shuffled().take(Lotto.NUM_OF_LOTTO_NUMBERS - 1).toList(),
+                    )
+                }
+                shouldThrowAny {
+                    Lotto(
+                        (LottoNumber.RAW_LOTTO_MIN_NUMBER..LottoNumber.RAW_LOTTO_MAX_NUMBER)
+                            .shuffled().take(Lotto.NUM_OF_LOTTO_NUMBERS + 1).toList(),
+                    )
+                }
             }
 
-            should("throw size relative error: delete duplicate") {
-                shouldThrowAny { Lotto(listOf(1, 2, 3, 4, 5, 5)) }
-                shouldThrowAny { Lotto(listOf(1, 2, 3, 3, 4, 4, 5, 5)) }
-
-                shouldThrowAny { Lotto(sortedSetOf(1, 2, 3, 4, 5, 5)) }
-                shouldThrowAny { Lotto(sortedSetOf(1, 2, 3, 3, 4, 4, 5, 5)) }
+            should("throw size error: Deduplication") {
+                // less
+                shouldThrowAny {
+                    Lotto(
+                        (
+                            (LottoNumber.LOTTO_MIN_NUMBER..<LottoNumber.LOTTO_MAX_NUMBER).take(
+                                Lotto.NUM_OF_LOTTO_NUMBERS - 2,
+                            ) + LottoNumber.LOTTO_MAX_NUMBER + LottoNumber.LOTTO_MAX_NUMBER
+                        ).toSortedSet(),
+                    )
+                }
+                // more
+                shouldThrowAny {
+                    Lotto(
+                        (
+                            (LottoNumber.LOTTO_MIN_NUMBER..<LottoNumber.LOTTO_MAX_NUMBER).take(
+                                Lotto.NUM_OF_LOTTO_NUMBERS,
+                            ) + LottoNumber.LOTTO_MAX_NUMBER + LottoNumber.LOTTO_MAX_NUMBER
+                        ).toSortedSet(),
+                    )
+                }
             }
 
-            should("throw range relative error") {
-                shouldThrowAny { Lotto(listOf(1, 2, 3, 4, 5, 46)) }
-                shouldThrowAny { Lotto(listOf(0, 2, 3, 4, 5, 6)) }
-
-                shouldThrowAny { Lotto(sortedSetOf(1, 2, 3, 4, 5, 46)) }
-                shouldThrowAny { Lotto(sortedSetOf(0, 2, 3, 4, 5, 6)) }
+            should("throw range error") {
+                shouldThrowAny {
+                    Lotto(
+                        (
+                            (LottoNumber.LOTTO_MIN_NUMBER..<LottoNumber.LOTTO_MAX_NUMBER).take(
+                                Lotto.NUM_OF_LOTTO_NUMBERS - 2,
+                            ) + (LottoNumber.LOTTO_MAX_NUMBER + 1)
+                        ).toSortedSet(),
+                    )
+                }
+                shouldThrowAny {
+                    Lotto(
+                        (
+                            (LottoNumber.LOTTO_MIN_NUMBER..<LottoNumber.LOTTO_MAX_NUMBER).take(
+                                Lotto.NUM_OF_LOTTO_NUMBERS - 2,
+                            ) + (LottoNumber.LOTTO_MIN_NUMBER - 1)
+                        ).toSortedSet(),
+                    )
+                }
             }
         }
     }
@@ -114,30 +153,4 @@ class LottoGenerateServiceTest : ShouldSpec({
             repo.size() shouldBe normalCount
         }
     }
-
-    // TODO: 외부 입력을 컨트롤 할 수 있는 방법이 없을까? 이것만 해결하면 테스트 커버리지가 비약적으로 상승하는데...
-    // MockK도 스태틱에 final 클래스(ex. System.in)는 모킹 안돼서 하려면 ByteInputStream인가 그걸로 해야하는데 언제 다 고치지...
-//    context("Manual Lotto: Repeat") {
-//        val repo = LottoRepositoryService.getLottoRepository()
-//
-//        should("generate normally") {
-//            // the number of manual lotto is bigger than 1
-//            val normalCount = 3
-//            LottoGenerateService.getManualLottoRepeat(normalCount, repo)
-//            repo.size() shouldBe normalCount
-//            repo.repo.forExactly(normalCount) {
-//                it.shouldBeTypeOf<LottoContainer>()
-//            }
-//        }
-//
-//        should("generate normally 2") {
-//            // the number of manual lotto is bigger than 1
-//            val normalCount = 0
-//            LottoGenerateService.getManualLottoRepeat(normalCount, repo)
-//            repo.size() shouldBe normalCount
-//            repo.repo.forExactly(normalCount) {
-//                it.shouldBeTypeOf<LottoContainer>()
-//            }
-//        }
-//    }
 })
