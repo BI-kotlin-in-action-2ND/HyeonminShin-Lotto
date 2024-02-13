@@ -1,5 +1,6 @@
 package com.shm.domain.user.controller
 
+import com.shm.domain.lotto.config.LottoConfig
 import com.shm.domain.lotto.controller.LottoController
 import com.shm.domain.user.domain.User
 import com.shm.global.utility.retryIfException
@@ -23,7 +24,7 @@ object UserController {
     fun showUserBoughtLotto(user: User) {
         println(DIVIDER)
         println("[이번 주 로또 당첨 번호]")
-        println(LottoController.winningLotto)
+        println(LottoConfig.WINNING_LOTTO)
         println()
         println("[User가 구매한 Lotto 리스트] (1등부터 순차적 출력)")
 
