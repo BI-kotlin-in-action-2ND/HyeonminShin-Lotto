@@ -25,9 +25,9 @@ data class LottoContainer(val lotto: Lotto, private val rank: LottoRank) : Compa
         return "${rank.rankString}: " +
             lotto.joinToString(" ") {
                 if (it in LottoConfig.WINNING_LOTTO) {
-                    GREEN.formatString("%2d".format(it))
+                    GREEN.formatString(it.toString())
                 } else {
-                    RED.formatString("%2d".format(it))
+                    RED.formatString(it.toString())
                 }
             }
     }
