@@ -6,7 +6,6 @@ import com.shm.domain.lotto.domain.LottoNumber
 import com.shm.domain.lotto.domain.generator.ManualLottoGenerator
 import com.shm.domain.lotto.view.InputProvider
 import io.kotest.assertions.throwables.shouldThrowAny
-import io.kotest.core.spec.Order
 import io.kotest.core.spec.style.ShouldSpec
 import io.kotest.inspectors.forExactly
 import io.kotest.matchers.collections.shouldBeSorted
@@ -16,7 +15,6 @@ import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
 import io.kotest.matchers.types.shouldBeTypeOf
 
-@Order(0)
 class LottoGenerateServiceTest : ShouldSpec({
     // operating normally
     val customManualLottoGenerator =
