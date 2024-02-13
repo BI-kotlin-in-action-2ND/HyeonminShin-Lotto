@@ -1,6 +1,6 @@
 package com.shm.domain.lotto.config
 
-import com.shm.domain.lotto.config.LottoNumberConfig.Companion.NUM_OF_LOTTO_NUMBERS
+import com.shm.domain.lotto.domain.Lotto.Companion.NUM_OF_LOTTO_NUMBERS
 
 /**
  * **ordinal**: 등수를 나타내는 지표로 사용 from 0
